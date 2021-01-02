@@ -41,8 +41,8 @@ G4VPhysicalVolume* nSimSCL2DetectorConstruction::Construct()
   //
   // World
   //
-  G4double world_sizeXY = 1.2*target_sizeXY;
-  G4double world_sizeZ  = 1.2*target_sizeZ;
+  G4double world_sizeXY = 1.5*target_sizeXY;
+  G4double world_sizeZ  = 1.5*target_sizeZ;
   G4Material* world_mat = nist->FindOrBuildMaterial("G4_Galactic");
 
   G4Box* solidWorld =

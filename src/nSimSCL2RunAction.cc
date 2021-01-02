@@ -30,12 +30,11 @@ nSimSCL2RunAction::nSimSCL2RunAction()
   analysisManager->SetVerboseLevel(1);
 
   // Create 1-dimensional histogram
-  analysisManager->CreateNtuple("tRAONSCL2", "RAONSCL2");
-  analysisManager->CreateNtupleSColumn("trackPID");
+  analysisManager->CreateNtuple("tRAONSCL2_nSim", "RAONSCL2 NeutronSim");
+  analysisManager->CreateNtupleDColumn("category");
   analysisManager->CreateNtupleSColumn("preStepProc");
-  analysisManager->CreateNtupleDColumn("pID");
-  analysisManager->CreateNtupleDColumn("tID");
-  analysisManager->CreateNtupleDColumn("sNumber");
+  analysisManager->CreateNtupleSColumn("postStepProc");
+  analysisManager->CreateNtupleDColumn("energy");
   analysisManager->CreateNtupleDColumn("kineticEnergy");
   analysisManager->CreateNtupleDColumn("vertex_x");
   analysisManager->CreateNtupleDColumn("vertex_y");
@@ -43,6 +42,9 @@ nSimSCL2RunAction::nSimSCL2RunAction()
   analysisManager->CreateNtupleDColumn("px");
   analysisManager->CreateNtupleDColumn("py");
   analysisManager->CreateNtupleDColumn("pz");
+  analysisManager->CreateNtupleDColumn("gTime");
+  analysisManager->CreateNtupleDColumn("lTime");
+  analysisManager->CreateNtupleDColumn("pTime");
   analysisManager->FinishNtuple();
 }
 

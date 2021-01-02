@@ -79,21 +79,27 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
   G4String preStepVolName, postStepVolName, postStepProcessName, preStepProcessName;
   preStepVolName = preStepPt->GetPhysicalVolume()->GetName();
 
-  if( fTrack->GetNextVolume() != NULL )
-    postStepVolName = postStepPt->GetPhysicalVolume()->GetName();
-  else
-    postStepVolName = "\0";
-
-  if( postStepPt != NULL )
+  if( postStepPt != NULL && postStepPt->GetPhysicalVolume() != NULL )
+  {
     postStepProcessName = postStepPt->GetProcessDefinedStep()->GetProcessName();
+    postStepVolName = postStepPt->GetPhysicalVolume()->GetName();
+  }
   else
-    postStepProcessName = "\0";
+  {
+    postStepVolName = "nonV";
+    postStepProcessName = "nonProc";
+  }
 
-  G4StepPoint* preStepPoint = preStepPt;
-  if( preStepPoint != NULL && preStepPoint->GetProcessDefinedStep() != NULL )
-    preStepProcessName = preStepPoint->GetProcessDefinedStep()->GetProcessName();
+  if( preStepPt != NULL && preStepPt->GetProcessDefinedStep() != NULL )
+  {
+    preStepVolName = preStepPt->GetPhysicalVolume()->GetName();
+    preStepProcessName = preStepPt->GetProcessDefinedStep()->GetProcessName();
+  }
   else
-    preStepProcessName = "\0";
+  {
+    preStepVolName = "nonV";
+    preStepProcessName = "nonProc";
+  }
 
 
   // -------------------------------------------------------------------
@@ -123,6 +129,7 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
     analysisManager->FillNtupleDColumn(11, gTime);
     analysisManager->FillNtupleDColumn(12, lTime);
     analysisManager->FillNtupleDColumn(13, pTime);
+    analysisManager->AddNtupleRow();
   }
   else if( name == "neutron"
       && preStepVolName == "Modulator"
@@ -143,9 +150,9 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
     analysisManager->FillNtupleDColumn(11, gTime);
     analysisManager->FillNtupleDColumn(12, lTime);
     analysisManager->FillNtupleDColumn(13, pTime);
+    analysisManager->AddNtupleRow();
   }
 
-  analysisManager->AddNtupleRow();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
