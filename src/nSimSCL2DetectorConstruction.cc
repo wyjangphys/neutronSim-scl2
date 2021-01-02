@@ -142,11 +142,11 @@ G4VPhysicalVolume* nSimSCL2DetectorConstruction::Construct()
   G4double  density = 11.35 * g/cm3;
   G4Material* lArMat = new G4Material("lArMat", z, a, density);
 
-  G4double lArTrd_dx1 = 11.5*m;
-  G4double lArTrd_dx2 = 22.4*m;
-  G4double lArTrd_dy1 = 11.5*m;
-  G4double lArTrd_dy2 = 22.4*m;
-  G4double lArTrd_dz  = 10*m;
+  G4double lArTrd_dx1 = 1.15*m;
+  G4double lArTrd_dx2 = 2.24*m;
+  G4double lArTrd_dy1 = 1.15*m;
+  G4double lArTrd_dy2 = 2.24*m;
+  G4double lArTrd_dz  = 1.0*m;
   G4Trd* lArTrd =
     new G4Trd("lArTrd",
         0.5 * lArTrd_dx1,   // dx1
