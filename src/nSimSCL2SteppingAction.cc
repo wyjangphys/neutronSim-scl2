@@ -9,6 +9,7 @@
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "G4LogicalVolume.hh"
+#include "G4VPhysicalVolume.hh"
 #include "G4ParticleTypes.hh"
 #include "g4root.hh"
 
@@ -30,27 +31,28 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
 {
   G4Track* fTrack = step->GetTrack();
 
-  //----------------------------------------------                                                                                                                                    
-  //       Step information                                                                                                                                                            
-  //----------------------------------------------                                                                                                                                    
+  //----------------------------------------------
+  //       Step information
+  //----------------------------------------------
   G4double Edep = step->GetTotalEnergyDeposit();
-  G4double energy = step->GetPreStepPoint()->GetKineticEnergy();
+  G4double energy = step->GetPreStepPoint()->GetTotalEnergy();
+  G4double kin_energy = step->GetPreStepPoint()->GetKineticEnergy();
   G4ThreeVector momentumDirection = step->GetPreStepPoint()->GetMomentumDirection();
   G4ThreeVector vectorPosition = step->GetPreStepPoint()->GetPosition();
 
-  //----------------------------------------------                                                                                                                                    
-  //        Track                                                                                                                                                                      
-  //----------------------------------------------                                                                                                                                    
+  //----------------------------------------------
+  //        Track
+  //----------------------------------------------
 
-  G4ParticleDefinition* fDef = fTrack->GetDefinition();     // dynamic particle definition                                                                                      
-  G4String name = fDef->GetParticleName();                  //                                                                                                                  
-  G4String partType= fDef->GetParticleType();               // ??                                                                                                                
-  G4double lifeTime = fDef->GetPDGLifeTime();               //<---                                                                                                              
+  G4ParticleDefinition* fDef = fTrack->GetDefinition();     // dynamic particle definition
+  G4String name = fDef->GetParticleName();                  //
+  G4String partType= fDef->GetParticleType();               // ??
+  G4double lifeTime = fDef->GetPDGLifeTime();               //<---
   //const G4VProcess* process = fTrack->GetCreatorProcess();
   G4int ZZ=fDef->GetAtomicNumber();
   G4int AA=fDef->GetAtomicMass();
 
-  //  =================================================                                                                                                                                
+  //  =================================================
   G4int pID = fTrack->GetParentID();
   G4int tID = fTrack->GetTrackID();
   G4int sID = fTrack->GetCurrentStepNumber();
@@ -58,22 +60,22 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
   G4double tLength = fTrack->GetTrackLength();
   G4double sLength = fTrack->GetStepLength();
 
-  G4double gTime = fTrack->GetGlobalTime();
-  G4double lTime = fTrack->GetLocalTime();
-  G4double pTime = fTrack->GetProperTime();
+  G4double gTime = step->GetPreStepPoint()->GetGlobalTime();
+  G4double lTime = step->GetPreStepPoint()->GetLocalTime();
+  G4double pTime = step->GetPreStepPoint()->GetProperTime();
 
-  G4String currentStepVolName, postStepVolName, currentProcessName, preStepProcessName;
-  currentStepVolName = fTrack->GetVolume()->GetName();
+  G4String preStepVolName, postStepVolName, postStepProcessName, preStepProcessName;
+  preStepVolName = step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
 
   if( fTrack->GetNextVolume() != NULL )
-    postStepVolName = fTrack->GetNextVolume()->GetName();
+    postStepVolName = step->GetPostStepPoint()->GetPhysicalVolume()->GetName();
   else
     postStepVolName = "\0";
 
   if( step->GetPostStepPoint() != NULL )
-    currentProcessName = step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    postStepProcessName = step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
   else
-    currentProcessName = "\0";
+    postStepProcessName = "\0";
 
   G4StepPoint* preStepPoint = step->GetPreStepPoint();
   if( preStepPoint != NULL && preStepPoint->GetProcessDefinedStep() != NULL )
@@ -81,55 +83,51 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
   else
     preStepProcessName = "\0";
 
-  if( name == "neutron" )
-  {
-  G4cout << "\t" <<
-    Edep << "\t" <<
-    energy << "\t" <<
-    name << "\t" <<
-    partType << "\t" <<
-    lifeTime << "\t" <<
-    pID << "\t" <<
-    tID << "\t" <<
-    sID << "\t" <<
-    tLength << "\t" <<
-    sLength << "\t" <<
-    gTime << "\t" <<
-    lTime << "\t" <<
-    pTime << "\t" <<
-    currentStepVolName << "\t" <<
-    postStepVolName << "\t" <<
-    currentProcessName << "\t" <<
-    ZZ << "\t" <<
-    AA << "\t" << G4endl;
-  }
+
+  // -------------------------------------------------------------------
+  //
+  // Save data into the ntuple
+  //
+  // -------------------------------------------------------------------
 
   auto analysisManager = G4AnalysisManager::Instance();
 
-  const G4TrackVector* secondary = step->GetSecondary();
-  for( size_t lp = 0; lp < (*secondary).size(); lp++ )
+  if( name == "neutron"
+      && preStepVolName == "Target"
+      && postStepVolName == "Modulator"
+      && preStepProcessName == "Transportation" )
   {
-    // particle name
-    analysisManager->FillNtupleSColumn(0, (*secondary)[lp]->GetDefinition()->GetParticleName() );
-    // preStepProc
-    analysisManager->FillNtupleSColumn(1, step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName());
-    // parent id
-    analysisManager->FillNtupleDColumn(2, (*secondary)[lp]->GetParentID());
-    // track id
-    analysisManager->FillNtupleDColumn(3, (*secondary)[lp]->GetTrackID());
-    // step number
-    analysisManager->FillNtupleDColumn(4, (*secondary)[lp]->GetCurrentStepNumber());
-    // kineticEnergy
-    analysisManager->FillNtupleDColumn(5, (G4double)(*secondary)[lp]->GetKineticEnergy()/CLHEP::MeV);
-    // vertex coordinates
-    analysisManager->FillNtupleDColumn(6, (G4double)(*secondary)[lp]->GetPosition().getX());
-    analysisManager->FillNtupleDColumn(7, (G4double)(*secondary)[lp]->GetPosition().getY());
-    analysisManager->FillNtupleDColumn(8, (G4double)(*secondary)[lp]->GetPosition().getZ());
-    // momentum
-    analysisManager->FillNtupleDColumn(9, (G4double)(*secondary)[lp]->GetMomentum().getX()/CLHEP::MeV);
-    analysisManager->FillNtupleDColumn(10, (G4double)(*secondary)[lp]->GetMomentum().getY()/CLHEP::MeV);
-    analysisManager->FillNtupleDColumn(11, (G4double)(*secondary)[lp]->GetMomentum().getZ()/CLHEP::MeV);
-    analysisManager->AddNtupleRow();
+    analysisManager->FillNtupleDColumn(0, 0);
+    analysisManager->FillNtupleSColumn(1, preStepProcessName);
+    analysisManager->FillNtupleSColumn(2, postStepProcessName);
+    analysisManager->FillNtupleDColumn(3, energy);
+    analysisManager->FillNtupleDColumn(4, kin_energy);
+    analysisManager->FillNtupleDColumn(5, vertex_x);
+    analysisManager->FillNtupleDColumn(6, vertex_y);
+    analysisManager->FillNtupleDColumn(7, vertex_z);
+    analysisManager->FillNtupleDColumn(8, px);
+    analysisManager->FillNtupleDColumn(9, py);
+    analysisManager->FillNtupleDColumn(10, pz);
+    analysisManager->FillNtupleDColumn(11, gTime);
+    analysisManager->FillNtupleDColumn(12, lTime);
+    analysisManager->FillNtupleDColumn(13, pTime);
+  }
+  else if( name == "neutron"
+      && preStepVolName == "Modulator"
+      && postStepVolName == "Detector"
+      && preStepProcessName == "Transportation" )
+  {
+    analysisManager->FillNtupleDColumn(0, 1);
+    analysisManager->FillNtupleSColumn(1, preStepProcessName);
+    analysisManager->FillNtupleSColumn(2, postStepProcessName);
+    analysisManager->FillNtupleDColumn(3, energy);
+    analysisManager->FillNtupleDColumn(4, kin_energy);
+    analysisManager->FillNtupleDColumn(5, vertex_x);
+    analysisManager->FillNtupleDColumn(6, vertex_y);
+    analysisManager->FillNtupleDColumn(7, vertex_z);
+    analysisManager->FillNtupleDColumn(8, px);
+    analysisManager->FillNtupleDColumn(9, py);
+    analysisManager->FillNtupleDColumn(10, pz);
   }
 
 }
