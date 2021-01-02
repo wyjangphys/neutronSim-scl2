@@ -34,11 +34,13 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
   //----------------------------------------------
   //       Step information
   //----------------------------------------------
+  G4StepPoint* preStepPt = step->GetPreStepPoint();
+  G4StepPoint* postStepPt = step->GetPostStepPoint();
   G4double Edep = step->GetTotalEnergyDeposit();
-  G4double energy = step->GetPreStepPoint()->GetTotalEnergy();
-  G4double kin_energy = step->GetPreStepPoint()->GetKineticEnergy();
-  G4ThreeVector momentumDirection = step->GetPreStepPoint()->GetMomentumDirection();
-  G4ThreeVector vectorPosition = step->GetPreStepPoint()->GetPosition();
+  G4double energy = preStepPt->GetTotalEnergy();
+  G4double kin_energy = preStepPt->GetKineticEnergy();
+  G4ThreeVector momentumDirection = preStepPt->GetMomentumDirection();
+  G4ThreeVector vectorPosition = preStepPt->GetPosition();
 
   //----------------------------------------------
   //        Track
@@ -47,7 +49,7 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
   G4ParticleDefinition* fDef = fTrack->GetDefinition();     // dynamic particle definition
   G4String name = fDef->GetParticleName();                  //
   G4String partType= fDef->GetParticleType();               // ??
-  G4double lifeTime = fDef->GetPDGLifeTime();               //<---
+  G4double lifeTime = fDef->GetPDGLifeTime()/CLHEP::nm;     //<---
   //const G4VProcess* process = fTrack->GetCreatorProcess();
   G4int ZZ=fDef->GetAtomicNumber();
   G4int AA=fDef->GetAtomicMass();
@@ -57,27 +59,37 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
   G4int tID = fTrack->GetTrackID();
   G4int sID = fTrack->GetCurrentStepNumber();
 
-  G4double tLength = fTrack->GetTrackLength();
-  G4double sLength = fTrack->GetStepLength();
+  G4double tLength = fTrack->GetTrackLength()/CLHEP::nm;
+  G4double sLength = fTrack->GetStepLength()/CLHEP::nm;
 
-  G4double gTime = step->GetPreStepPoint()->GetGlobalTime();
-  G4double lTime = step->GetPreStepPoint()->GetLocalTime();
-  G4double pTime = step->GetPreStepPoint()->GetProperTime();
+  G4double gTime = preStepPt->GetGlobalTime()/CLHEP::ns;
+  G4double lTime = preStepPt->GetLocalTime()/CLHEP::ns;
+  G4double pTime = preStepPt->GetProperTime()/CLHEP::ns;
+
+  G4double px, py, pz;
+  px = postStepPt->GetMomentum().getX()/CLHEP::GeV;
+  py = postStepPt->GetMomentum().getY()/CLHEP::GeV;
+  pz = postStepPt->GetMomentum().getZ()/CLHEP::GeV;
+
+  G4double vertex_x, vertex_y, vertex_z;
+  vertex_x = postStepPt->GetPosition().getX()/CLHEP::m;
+  vertex_y = postStepPt->GetPosition().getY()/CLHEP::m;
+  vertex_z = postStepPt->GetPosition().getZ()/CLHEP::m;
 
   G4String preStepVolName, postStepVolName, postStepProcessName, preStepProcessName;
-  preStepVolName = step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
+  preStepVolName = preStepPt->GetPhysicalVolume()->GetName();
 
   if( fTrack->GetNextVolume() != NULL )
-    postStepVolName = step->GetPostStepPoint()->GetPhysicalVolume()->GetName();
+    postStepVolName = postStepPt->GetPhysicalVolume()->GetName();
   else
     postStepVolName = "\0";
 
-  if( step->GetPostStepPoint() != NULL )
-    postStepProcessName = step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+  if( postStepPt != NULL )
+    postStepProcessName = postStepPt->GetProcessDefinedStep()->GetProcessName();
   else
     postStepProcessName = "\0";
 
-  G4StepPoint* preStepPoint = step->GetPreStepPoint();
+  G4StepPoint* preStepPoint = preStepPt;
   if( preStepPoint != NULL && preStepPoint->GetProcessDefinedStep() != NULL )
     preStepProcessName = preStepPoint->GetProcessDefinedStep()->GetProcessName();
   else
