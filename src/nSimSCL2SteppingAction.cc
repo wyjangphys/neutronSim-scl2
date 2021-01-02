@@ -107,7 +107,7 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
   if( name == "neutron"
       && preStepVolName == "Target"
       && postStepVolName == "Modulator"
-      && preStepProcessName == "Transportation" )
+      && postStepProcessName == "Transportation" )
   {
     analysisManager->FillNtupleDColumn(0, 0);
     analysisManager->FillNtupleSColumn(1, preStepProcessName);
@@ -127,7 +127,7 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
   else if( name == "neutron"
       && preStepVolName == "Modulator"
       && postStepVolName == "Detector"
-      && preStepProcessName == "Transportation" )
+      && postStepProcessName == "Transportation" )
   {
     analysisManager->FillNtupleDColumn(0, 1);
     analysisManager->FillNtupleSColumn(1, preStepProcessName);
@@ -140,8 +140,12 @@ void nSimSCL2SteppingAction::UserSteppingAction(const G4Step* step)
     analysisManager->FillNtupleDColumn(8, px);
     analysisManager->FillNtupleDColumn(9, py);
     analysisManager->FillNtupleDColumn(10, pz);
+    analysisManager->FillNtupleDColumn(11, gTime);
+    analysisManager->FillNtupleDColumn(12, lTime);
+    analysisManager->FillNtupleDColumn(13, pTime);
   }
 
+  analysisManager->AddNtupleRow();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
